@@ -441,9 +441,8 @@
         </div>
         <div class="sections-overlay">
             <div id="timeStatus" class="time-status">
-                <h2> ALL EXAMS ARE LOCKED</h2>
+                <h2>🔒 ALL EXAMS ARE LOCKED</h2>
                 <p>Exams are accessible only in the college computer lab</p>
-               
             </div>
             <div class="columns-container" id="sectionsContainer">
                 <!-- Sections will be dynamically populated -->
@@ -589,19 +588,6 @@
                 renderSections();
             } else {
                 timeStatus.style.display = 'block';
-                
-                const now = new Date();
-                if (now.getDay() === 0) {
-                    document.querySelector('#timeStatus h2').textContent = '🔒 SUNDAY - CLOSED';
-                    document.querySelector('#timeStatus p').textContent = 'Exams not available on Sundays.';
-                    document.querySelector('.time-detail').textContent = 'Mon-Sat: 8:00 AM - 5:00 PM';
-                } else {
-                    document.querySelector('#timeStatus h2').textContent = '⏰ EXAM CLOSED';
-                    document.querySelector('#timeStatus p').textContent = 'Exams available 8:00 AM - 5:00 PM';
-                    document.querySelector('.time-detail').textContent = 'Current time: ' + 
-                        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                }
-                
                 sectionsContainer.innerHTML = '';
             }
         }
