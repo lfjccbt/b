@@ -457,21 +457,28 @@
     <div class="global-copyright">© LFJC 2026 | All Rights Reserved</div>
 
     <script>
-    (function() {
+  (function() {
      
-        const CLASS_OPEN_HOUR = 8;
-        const CLASS_CLOSE_HOUR = 17;
-
-        function isExamTime() {
-            const now = new Date();
-            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-            const openTotalMinutes = CLASS_OPEN_HOUR * 60;
-            const closeTotalMinutes = CLASS_CLOSE_HOUR * 60;
-            
-            if (now.getDay() === 0) return false;
-            return currentTotalMinutes >= openTotalMinutes && currentTotalMinutes < closeTotalMinutes;
+    function isExamTime() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+        const day = now.getDay();
+        
+        
+        if (day === 0) return false;
+        
+      
+        if (day === 6) {
+            return currentTotalMinutes >= 480 && currentTotalMinutes < 810;
         }
+        
+      
+        return currentTotalMinutes >= 480 && currentTotalMinutes < 990;
+    }
 
+   
        
         const SECTION_URLS = {
             "1D": "https://lfjc1d.github.io/1d/",
