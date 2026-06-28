@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LFJC</title>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -276,6 +277,29 @@
             position: relative;
         }
         
+        .section-btn.locked {
+            background: rgba(220, 38, 38, 0.75);
+            color: white;
+            text-shadow: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+        }
+        
+        .section-btn.locked:hover {
+            transform: none;
+            background: rgba(220, 38, 38, 0.85);
+        }
+        
+        .lock-badge {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 18px;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        
         .section-btn.unlocked {
             background: rgba(76, 175, 80, 0.85);
             color: white;
@@ -288,16 +312,6 @@
         
         .section-btn:active {
             transform: scale(0.96);
-        }
-        
-        .lock-badge {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 18px;
-            background: rgba(0,0,0,0.5);
-            padding: 2px 8px;
-            border-radius: 20px;
         }
         
         .column:nth-child(1) .section-btn {
@@ -321,45 +335,99 @@
             pointer-events: none;
         }
         
-        .time-status {
-            display: none;
+        /* Lock Modal */
+        .lock-modal {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 40px 30px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            border: 3px solid #ff6b6b;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
         }
         
-        .time-status h2 {
-            color: #ff6b6b;
-            font-size: 2rem;
+        .lock-modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid #ef4444;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        
+        .lock-modal-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .lock-modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ef4444;
             margin-bottom: 15px;
         }
         
-        .time-status p {
-            font-size: 18px;
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-
-        .time-status .time-detail {
-            color: #ffd93d;
+        .lock-modal-message {
+            color: #cbd5e1;
             font-size: 16px;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .lock-modal-close {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .lock-modal-close:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         @keyframes shake {
@@ -406,10 +474,11 @@
     </style>
 </head>
 <body>
-  
+    <!-- SCREEN 1: Combined (Image + Password) -->
     <div id="combinedScreen" class="combined-screen screen-bg screen active">
         <div class="page-header">
-           
+            <div class="header-text"></div>
+            <div class="sub-header"></div>
         </div>
         
         <div class="image-container">
@@ -433,220 +502,309 @@
         </div>
     </div>
     
+    <!-- SCREEN 2: Main Interface - Sections -->
     <div id="mainInterface" class="main-interface screen">
         <div class="page-header">
             <div class="header-text">LFJC ONLINE EXAMINATION</div>
             <div class="sub-header"></div>
         </div>
         <div class="sections-overlay">
-            <div id="timeStatus" class="time-status">
-                <h2>🔒 ALL EXAMS ARE LOCKED </h2>
-                <p>Exams are accessible only in the college computer lab</p>
-            </div>
             <div class="columns-container" id="sectionsContainer">
-             
+                <!-- Sections will be dynamically populated with lock status -->
                 <div class="column">
-                    <div style="color: white; text-align: center; padding: 20px;">Loading...</div>
+                    <div class="loading-overlay" style="display: flex; position: relative; background: transparent;">
+                        <div class="spinner"></div>
+                        <p style="color: white;">Loading class status...</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-  
+    <!-- Lock Modal -->
+    <div id="lockModal" class="lock-modal">
+        <div class="lock-modal-content">
+            <div class="lock-modal-icon">🔒</div>
+            <div class="lock-modal-title">Class Locked</div>
+            <div class="lock-modal-message" id="lockModalMessage">
+                This class is currently locked by the administrator.
+                <br><br>
+                Please check back later.
+            </div>
+            <button class="lock-modal-close" onclick="closeLockModal()">OK</button>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p style="color: white;">Checking class status...</p>
+    </div>
+
+    <!-- Global Copyright -->
     <div class="global-copyright">© LFJC 2026 | All Rights Reserved</div>
 
     <script>
-  (function() {
-     
-    function isExamTime() {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const currentTotalMinutes = currentHour * 60 + currentMinute;
-        const day = now.getDay();
-        
-        
-        if (day === 0) return false;
-        
-      
-        if (day === 6) {
-            return currentTotalMinutes >= 480 && currentTotalMinutes < 810;
-        }
-        
-      
-        return currentTotalMinutes >= 480 && currentTotalMinutes < 990;
-    }
-
-   
-       
-        const SECTION_URLS = {
-            "1D": "https://lfjc1d.github.io/1d/",
-            "1M": "https://lfjc1m.github.io/1M/",
-            "1N": "https://lfjc1n.github.io/1n/",
-            "1E": "https://lfjc1e.github.io/1e/",
-            "2D": "https://lfjc2d.github.io/2d/",
-            "2M": "https://lfjc2m.github.io/2m/",
-            "2N": "https://lfjc2n.github.io/2n/",
-            "2E": "https://lfjc2e.github.io/2e/"
-        };
-
-        const REGULAR_PASSWORD = "lfjc2025";
-      
-
-        const combinedScreen = document.getElementById('combinedScreen');
-        const mainInterface = document.getElementById('mainInterface');
-        const passwordInput = document.getElementById('passwordInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const errorMsg = document.getElementById('errorMessage');
-        const sectionsContainer = document.getElementById('sectionsContainer');
-        const timeStatus = document.getElementById('timeStatus');
-
-        let currentState = 'combined';
-
-        function enterFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        }
-
-        function focusPassword() {
-            setTimeout(() => passwordInput?.focus(), 100);
-        }
-
-        function switchScreen(toScreen) {
-            combinedScreen.classList.remove('active');
-            mainInterface.classList.remove('active');
-            toScreen.classList.add('active');
-        }
-
-        function shakeBox() {
-            const box = document.querySelector('.password-box');
-            box?.style.setProperty('animation', 'shake 0.5s');
-            setTimeout(() => box?.style.removeProperty('animation'), 500);
-        }
-
-        function showError(msg) {
-            errorMsg.style.display = 'block';
-            errorMsg.textContent = msg;
-            setTimeout(() => errorMsg.style.display = 'none', 3500);
-        }
-
-        function renderSections() {
-            const sections = ['1D', '1M', '1N', '1E', '2D', '2M', '2N', '2E'];
-            const column1 = sections.slice(0, 4);
-            const column2 = sections.slice(4, 8);
-
-            let html = `
-                <div class="column">
-                    ${column1.map(section => `
-                        <button class="section-btn unlocked" data-section="${section}">
-                            ${section}
-                            <span class="lock-badge" style="background: rgba(76,175,80,0.6);">🔓 OPEN</span>
-                        </button>
-                    `).join('')}
-                </div>
-                <div class="column">
-                    ${column2.map(section => `
-                        <button class="section-btn unlocked" data-section="${section}">
-                            ${section}
-                            <span class="lock-badge" style="background: rgba(76,175,80,0.6);">🔓 OPEN</span>
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-
-            sectionsContainer.innerHTML = html;
-
-            document.querySelectorAll('.section-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const section = this.dataset.section;
-                    const url = SECTION_URLS[section];
-                    if (!url) {
-                        alert(`URL for section ${section} not configured`);
-                        return;
-                    }
-
-                    this.style.transform = 'scale(0.96)';
-                    this.style.opacity = '0.8';
-
-                    setTimeout(() => {
-                        window.open(url, '_blank');
-                    }, 150);
-
-                    setTimeout(() => {
-                        this.style.transform = '';
-                        this.style.opacity = '';
-                    }, 300);
-                });
-            });
-        }
-
-        function checkTimeAndRender() {
-            switchScreen(mainInterface);
-            currentState = 'sections';
+        (function() {
+            // ========== CONFIGURATION ==========
+            const LOCK_CONFIG_URL = 'https://raw.githubusercontent.com/lfjccbt/lock/main/locks.json';
             
-            if (isExamTime()) {
-                timeStatus.style.display = 'none';
-                renderSections();
-            } else {
-                timeStatus.style.display = 'block';
-                sectionsContainer.innerHTML = '';
+            // Replace with your actual exam URLs for each section
+            const SECTION_URLS = {
+                "1D": "https://lfjc1d.github.io/1d/",
+                "1M": "https://lfjc1m.github.io/1M/",
+                "1N": "https://lfjc1n.github.io/1n/",
+                "1E": "https://lfjc1e.github.io/1e/",
+                "2D": "https://lfjc2d.github.io/2d/",
+                "2M": "https://lfjc2m.github.io/2m/",
+                "2N": "https://lfjc2n.github.io/2n/",
+                "2E": "https://lfjc2e.github.io/2e/"
+            };
+            
+            const REGULAR_PASSWORD = "lfjc2025";
+            // ======================================
+            
+            // DOM Elements
+            const combinedScreen = document.getElementById('combinedScreen');
+            const mainInterface = document.getElementById('mainInterface');
+            const passwordInput = document.getElementById('passwordInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMsg = document.getElementById('errorMessage');
+            const sectionsContainer = document.getElementById('sectionsContainer');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // State
+            let currentState = 'combined';
+            let isFullscreen = false;
+            let classLocks = {};
+            let isLockDataLoaded = false;
+            
+            // Fullscreen function
+            function enterFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                    isFullscreen = true;
+                }
             }
-        }
-
-        function checkPassword() {
-            const pwd = passwordInput.value.trim();
+            
+            function focusPassword() {
+                setTimeout(() => passwordInput?.focus(), 100);
+            }
+            
+            function switchScreen(toScreen) {
+                combinedScreen.classList.remove('active');
+                mainInterface.classList.remove('active');
+                toScreen.classList.add('active');
+            }
+            
+            function shakeBox() {
+                const box = document.querySelector('.password-box');
+                box?.style.setProperty('animation', 'shake 0.5s');
+                setTimeout(() => box?.style.removeProperty('animation'), 500);
+            }
+            
+            function showError(msg) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = msg;
+                setTimeout(() => errorMsg.style.display = 'none', 3500);
+            }
+            
+            // Load lock status from GitHub
+            async function loadLockStatus() {
+                try {
+                    loadingOverlay.style.display = 'flex';
+                    const response = await fetch(LOCK_CONFIG_URL + '?t=' + Date.now()); // Prevent cache
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch lock status');
+                    }
+                    
+                    classLocks = await response.json();
+                    isLockDataLoaded = true;
+                    console.log('Lock status loaded:', classLocks);
+                    
+                } catch (error) {
+                    console.error('Error loading lock status:', error);
+                    // Default: all classes unlocked if can't fetch
+                    const allClasses = ['1D', '1M', '1N', '1E', '2D', '2M', '2N', '2E'];
+                    allClasses.forEach(cls => classLocks[cls] = false);
+                    isLockDataLoaded = true;
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+            
+            // Check if a class is locked
+            function isClassLocked(className) {
+                return classLocks[className] === true;
+            }
+            
+            // Render section buttons with lock status
+            function renderSections() {
+                const sections = ['1D', '1M', '1N', '1E', '2D', '2M', '2N', '2E'];
+                const column1 = sections.slice(0, 4);
+                const column2 = sections.slice(4, 8);
+                
+                let html = `
+                    <div class="column">
+                        ${column1.map(section => {
+                            const locked = isClassLocked(section);
+                            return `
+                                <button class="section-btn ${locked ? 'locked' : 'unlocked'}" 
+                                        data-section="${section}" 
+                                        ${locked ? 'disabled' : ''}>
+                                    ${section}
+                                    ${locked ? '<span class="lock-badge">🔒 LOCKED</span>' : '<span class="lock-badge" style="background: rgba(76,175,80,0.6);">🔓 OPEN</span>'}
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="column">
+                        ${column2.map(section => {
+                            const locked = isClassLocked(section);
+                            return `
+                                <button class="section-btn ${locked ? 'locked' : 'unlocked'}" 
+                                        data-section="${section}" 
+                                        ${locked ? 'disabled' : ''}>
+                                    ${section}
+                                    ${locked ? '<span class="lock-badge">🔒 LOCKED</span>' : '<span class="lock-badge" style="background: rgba(76,175,80,0.6);">🔓 OPEN</span>'}
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                
+                sectionsContainer.innerHTML = html;
+                
+                // Attach click handlers
+                document.querySelectorAll('.section-btn').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const section = this.dataset.section;
+                        const locked = isClassLocked(section);
+                        
+                        if (locked) {
+                            showLockModal(section);
+                            return;
+                        }
+                        
+                        const url = SECTION_URLS[section];
+                        if (!url) {
+                            alert(`URL for section ${section} not configured`);
+                            return;
+                        }
+                        
+                        // Visual feedback
+                        this.style.transform = 'scale(0.96)';
+                        this.style.opacity = '0.8';
+                        
+                        // Open exam and close current window
+                        setTimeout(() => {
+                            window.open(url, '_blank');
+                            setTimeout(() => {
+                                try { window.close(); } catch(e) {}
+                                try { window.location.href = 'about:blank'; } catch(e) {}
+                            }, 200);
+                        }, 150);
+                        
+                        setTimeout(() => {
+                            this.style.transform = '';
+                            this.style.opacity = '';
+                        }, 300);
+                    });
+                });
+            }
+            
+            // Show lock modal
+            function showLockModal(className) {
+                const modal = document.getElementById('lockModal');
+                const messageDiv = document.getElementById('lockModalMessage');
+                messageDiv.innerHTML = `
+                    Class ${className} is currently locked by the administrator.
+                    <br><br>
+                    Please check back later or contact your teacher.
+                    <br><br>
+                    <span style="font-size: 14px; color: #94a3b8;">⏰ Locked classes cannot be accessed</span>
+                `;
+                modal.style.display = 'flex';
+            }
+            
+            window.closeLockModal = function() {
+                document.getElementById('lockModal').style.display = 'none';
+            };
+            
+            // Password check
+            async function checkPassword() {
+                const pwd = passwordInput.value.trim();
+                
+                errorMsg.style.display = 'none';
+                
+                if (!pwd) {
+                    showError('Please enter a password');
+                    shakeBox();
+                    focusPassword();
+                    return;
+                }
+                
+                if (pwd === REGULAR_PASSWORD) {
+                    // Load lock status before showing sections
+                    loadingOverlay.style.display = 'flex';
+                    await loadLockStatus();
+                    renderSections();
+                    loadingOverlay.style.display = 'none';
+                    
+                    // Enter fullscreen when password is correct
+                    enterFullscreen();
+                    switchScreen(mainInterface);
+                    currentState = 'sections';
+                    passwordInput.value = '';
+                } else {
+                    showError('Incorrect password. Try again.');
+                    passwordInput.value = '';
+                    shakeBox();
+                    focusPassword();
+                }
+            }
+            
+            submitBtn.addEventListener('click', checkPassword);
+            passwordInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') checkPassword();
+            });
+            
+            // ESC key to go back
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+                e.preventDefault();
+                
+                if (currentState === 'sections') {
+                    switchScreen(combinedScreen);
+                    currentState = 'combined';
+                    passwordInput.value = '';
+                    focusPassword();
+                }
+            });
+            
+            // Close modal on backdrop click
+            document.getElementById('lockModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+            
+            // INIT
+            window.addEventListener('load', async () => {
+                focusPassword();
+            });
+            
+            // Click anywhere to go fullscreen on first page only
+            document.addEventListener('click', () => {
+                if (currentState === 'combined') {
+                    enterFullscreen();
+                }
+                if (currentState === 'combined') focusPassword();
+            });
+            
             errorMsg.style.display = 'none';
-
-            if (!pwd) {
-                showError('Please enter a password');
-                shakeBox();
-                focusPassword();
-                return;
-            }
-
-            if (pwd === REGULAR_PASSWORD) {
-                enterFullscreen();
-                checkTimeAndRender();
-                passwordInput.value = '';
-            } else {
-                showError('Incorrect password. Try again.');
-                passwordInput.value = '';
-                shakeBox();
-                focusPassword();
-            }
-        }
-
-        submitBtn.addEventListener('click', checkPassword);
-        passwordInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') checkPassword();
-        });
-
-        document.addEventListener('keydown', e => {
-            if (e.key !== 'Escape') return;
-            e.preventDefault();
-
-            if (currentState === 'sections') {
-                switchScreen(combinedScreen);
-                currentState = 'combined';
-                passwordInput.value = '';
-                focusPassword();
-            }
-        });
-
-        window.addEventListener('load', () => {
-            focusPassword();
-        });
-
-        document.addEventListener('click', () => {
-            if (currentState === 'combined') {
-                enterFullscreen();
-                focusPassword();
-            }
-        });
-
-        errorMsg.style.display = 'none';
-    })();
+        })();
     </script>
 </body>
 </html>
